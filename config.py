@@ -7,6 +7,8 @@ class Config(object):
     DEBUG = False
     TESTING = False
     CSRF_ENABLED = False
+    SQLALCHEMY_DATABASE_URI = os.environ['DATABASE_URL']
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
     SECRET_KEY = 'this-really-needs-to-be-changed'
 
 
@@ -22,7 +24,6 @@ class StagingConfig(Config):
 class DevelopmentConfig(Config):
     DEVELOPMENT = True
     DEBUG = True
-
 
 class TestingConfig(Config):
     TESTING = True
