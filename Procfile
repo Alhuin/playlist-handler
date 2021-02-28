@@ -1,1 +1,1 @@
-web: gunicorn flask run --preload
+web: gunicorn "project:create_app()" --preload
