@@ -1,1 +1,1 @@
-web: gunicorn main --preload
+web: gunicorn flask run --preload
