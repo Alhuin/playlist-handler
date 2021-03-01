@@ -3,7 +3,7 @@ import json
 import requests
 import base64
 import urllib.parse as urllibparse
-from flask import request, current_app
+from flask import request
 
 
 # Client Keys
@@ -33,8 +33,6 @@ def app_authorization():
         "response_type": "code",
         "redirect_uri": REDIRECT_URI,
         "scope": SCOPE,
-        # "state": STATE,
-        # "show_dialog": SHOW_DIALOG_str,
         "client_id": CLIENT_ID
     }
     url_args = "&".join(["{}={}".format(key, urllibparse.quote(val)) for key, val in auth_query_parameters.items()])
