@@ -20,7 +20,7 @@ SPOTIFY_API_URL = "{}/{}".format(SPOTIFY_API_BASE_URL, API_VERSION)
 # Server-side Parameters
 CLIENT_SIDE_URL = os.environ["CLIENT_SIDE_URL"]
 PORT = os.environ["CLIENT_SIDE_PORT"]
-REDIRECT_URI = "{}{}/callback/q".format(CLIENT_SIDE_URL, ':{}'.format(PORT) if PORT else '')
+REDIRECT_URI = "{}{}/callback/q".format(CLIENT_SIDE_URL, ':{}'.format(PORT) if PORT != "False" else '')
 SCOPE = "user-library-read"
 STATE = ""
 SHOW_DIALOG_bool = True

@@ -4,7 +4,6 @@ import requests
 import urllib.parse as urllibparse
 from flask import request
 
-
 # Client Keys
 CLIENT_ID = os.environ["DEEZER_CLIENT_ID"]
 CLIENT_SECRET = os.environ["DEEZER_CLIENT_SECRET"]
@@ -17,7 +16,7 @@ DEEZER_API_BASE_URL = "https://api.deezer.com"
 # Server-side Parameters
 CLIENT_SIDE_URL = os.environ["CLIENT_SIDE_URL"]
 PORT = os.environ["CLIENT_SIDE_PORT"]
-REDIRECT_URI = "{}{}/callback/d".format(CLIENT_SIDE_URL, ':{}'.format(PORT) if PORT else '')
+REDIRECT_URI = "{}{}/callback/d".format(CLIENT_SIDE_URL, ':{}'.format(PORT) if PORT != "False" else '')
 
 
 # Authorization of application with deezer
