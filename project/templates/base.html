@@ -44,9 +44,10 @@
                 </div>
             </nav>
         </div>
-
-        <div class="hero-body">
-            <div class="container has-text-centered">
+        <div class="hero-body columns" style="margin-bottom: 0!important">
+            {% block menu %}
+            {% endblock %}
+            <div class="container has-text-centered column">
                {% block content %}
                {% endblock %}
             </div>
