@@ -1,7 +1,6 @@
 import re
 import os
 from seleniumwire import webdriver
-from webdriver_manager.firefox import GeckoDriverManager
 import json, requests
 from requests.adapters import HTTPAdapter
 
@@ -16,10 +15,7 @@ class SoundCloudApi:
 
     def check_client_id(self):
         if self.client_id == "False" or not self.get_user_id('https://soundcloud.com/eminemofficial'):
-            path = GeckoDriverManager().install()
-            print(path)
-            print(os.environ["GECKODRIVER_PATH"])
-            driver = webdriver.Firefox(executable_path='geckodriver')
+            driver = webdriver.Firefox()
             driver.get("https://www.soundcloud.com")
             pattern = re.compile('client_id=(.*?)&')
 
