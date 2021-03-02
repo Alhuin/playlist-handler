@@ -19,7 +19,7 @@ class SoundCloudApi:
         if self.client_id == "False" or not self.get_user_id('https://soundcloud.com/eminemofficial'):
             options = Options()
             options.binary_location = os.environ["FIREFOX_BIN"]
-            driver = webdriver.Firefox(executable_path=os.environ["GECKODRIVER_PATH"], firefox_options=options)
+            driver = webdriver.Firefox(executable_path=os.environ["GECKODRIVER_PATH"], options=options)
             driver.get("https://www.soundcloud.com")
             pattern = re.compile('client_id=(.*?)&')
 
