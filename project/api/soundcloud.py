@@ -19,7 +19,7 @@ class SoundCloudApi:
 
     def check_client_id(self):
         print("CHECK CLIENT ID")
-        if self.client_id == "False" or not self.get_user('https://soundcloud.com/eminemofficial'):
+        if not current_user.soundcloud_tkn or not self.get_user('https://soundcloud.com/eminemofficial'):
             print("NEW DRIVER")
             options = webdriver.ChromeOptions()
             options.add_argument(" — disable - gpu")
@@ -124,7 +124,7 @@ class SoundCloudApi:
         print("GET USER")
         r = self.session.get(
             '{}/resolve'.format(self.api_url),
-            params={"client_id": self.client_id, 'url': profile_url}
+            params={"client_id": current_user.soundcloud_tkn, 'url': profile_url}
         )
         print(r.status_code)
         if r.status_code != 200:
