@@ -6,6 +6,7 @@ from . import db
 
 main = Blueprint('main', __name__)
 
+print('init api clients')
 spotify_client = spotify.SpotifyApi()
 deezer_client = deezer.DeezerApi()
 soundcloud_client = soundcloud.SoundCloudApi()
