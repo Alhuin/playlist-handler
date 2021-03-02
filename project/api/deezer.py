@@ -1,10 +1,9 @@
 import os
-import json
 import requests
 import urllib.parse as urllibparse
 from flask import request
 from flask_login import current_user
-from project import db, User
+from project import db
 
 
 class DeezerApi:
@@ -45,16 +44,14 @@ class DeezerApi:
             "app_id": self.client_id,
             "secret": self.client_secret,
             "code": auth_token,
-            "output": json
         }
         post_request = requests.post(self.token_url, data=code_payload)
 
         # Token & expiration
         response_data = urllibparse.parse_qs(post_request.text)
-        access_token = response_data["access_token"]
         current_user.deezer_tkn = response_data["access_token"]
         db.session.commit()
-        token_expires = response_data["expires"]
-        # Use the access token to access Spotify API
-        authorization_header = {"Authorization": "Bearer {}".format(access_token)}
+        # token_expires = response_data["expires"]
+
+        authorization_header = {"Authorization": "Bearer {}".format(current_user.deezer_tkn)}
         return authorization_header

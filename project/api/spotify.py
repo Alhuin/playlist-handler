@@ -57,13 +57,13 @@ class SpotifyApi:
 
         # Tokens are Returned to Application
         response_data = json.loads(post_request.text)
-        print(response_data)
         access_token = response_data["access_token"]
         current_user.spotify_tkn = response_data["access_token"]
         db.session.commit()
-        refresh_token = response_data["refresh_token"]
-        token_type = response_data["token_type"]
-        expires_in = response_data["expires_in"]
+
+        # refresh_token = response_data["refresh_token"]
+        # token_type = response_data["token_type"]
+        # expires_in = response_data["expires_in"]
 
         # Use the access token to access Spotify API
         authorization_header = {"Authorization": "Bearer {}".format(access_token)}
