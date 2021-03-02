@@ -1,3 +1,4 @@
+import os
 from flask import Blueprint, render_template, redirect
 from flask_login import login_required, current_user
 from .api import spotify, deezer, soundcloud
@@ -11,6 +12,7 @@ soundcloud_client = soundcloud.SoundCloudApi()
 
 
 @main.route('/spotify')
+@login_required
 def spotify_connect():
     auth_url = spotify_client.app_authorization()
     return redirect(auth_url)
@@ -36,9 +38,17 @@ def spotify_callback():
 
 
 @main.route('/deezer')
+@login_required
 def deezer_connect():
     auth_url = deezer_client.app_authorization()
     return redirect(auth_url)
+
+
+@main.route('/soundcloud')
+@login_required
+def soundcloud_connect():
+    soundcloud_client.check_client_id()
+    return os.environ["SOUNDCLOUD_CLIENT_ID"]
 
 
 @main.route('/callback/d')
