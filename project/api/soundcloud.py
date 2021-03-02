@@ -1,8 +1,12 @@
 import re
 import os
+
+from flask_login import current_user
 from seleniumwire import webdriver
 import json, requests
 from requests.adapters import HTTPAdapter
+
+from project import db
 
 
 class SoundCloudApi:
@@ -14,23 +18,25 @@ class SoundCloudApi:
         self.session.mount("https://", adapter=HTTPAdapter(max_retries=3))
 
     def check_client_id(self):
-        ret = self.get_user('https://soundcloud.com/eminemofficial')
-        print(ret)
-        if self.client_id == "False" or not ret:
+        print("CHECK CLIENT ID")
+        if self.client_id == "False" or not self.get_user('https://soundcloud.com/eminemofficial'):
+            print("NEW DRIVER")
             options = webdriver.ChromeOptions()
             options.add_argument(" — disable - gpu")
             options.add_argument(" — no - sandbox")
             options.add_argument(' — headless')
             options.add_argument("--remote-debugging-port=9222")
 
+            pattern = re.compile('client_id=(.*?)&')
             driver = webdriver.Chrome(executable_path=os.environ["CHROMEDRIVER_PATH"], chrome_options=options)
             driver.get("https://www.soundcloud.com")
-            pattern = re.compile('client_id=(.*?)&')
 
             for request in driver.requests:
                 m = re.search(pattern, request.url)
                 if m:
                     os.environ["SOUNDCLOUD_CLIENT_ID"] = m.groups()[0]
+                    current_user.soundcloud_tkn = m.groups()[0]
+                    db.session.commit()
                     self.client_id = m.groups()[0]
                     print(self.client_id)
                     break
@@ -115,11 +121,14 @@ class SoundCloudApi:
         }
 
     def get_user(self, profile_url):
+        print("GET USER")
         r = self.session.get(
             '{}/resolve'.format(self.api_url),
             params={"client_id": self.client_id, 'url': profile_url}
         )
+        print(r.status_code)
         if r.status_code != 200:
             return False
         user = json.loads(r.text)
+        print(user)
         return user
