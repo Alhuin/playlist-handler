@@ -4,6 +4,9 @@ import requests
 import base64
 import urllib.parse as urllibparse
 from flask import request
+from flask_login import current_user
+
+from project import db
 
 
 class SpotifyApi:
@@ -56,6 +59,8 @@ class SpotifyApi:
         response_data = json.loads(post_request.text)
         print(response_data)
         access_token = response_data["access_token"]
+        current_user.spotify_tkn = response_data["access_token"]
+        db.session.commit()
         refresh_token = response_data["refresh_token"]
         token_type = response_data["token_type"]
         expires_in = response_data["expires_in"]

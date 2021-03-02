@@ -15,6 +15,8 @@ soundcloud_client = soundcloud.SoundCloudApi()
 @main.route('/spotify')
 @login_required
 def spotify_connect():
+    if current_user.spotify_tkn:
+        return current_user.spotify_tkn
     auth_url = spotify_client.app_authorization()
     return redirect(auth_url)
 
@@ -41,6 +43,8 @@ def spotify_callback():
 @main.route('/deezer')
 @login_required
 def deezer_connect():
+    if current_user.deezer_tkn:
+        return current_user.deezer_tkn
     auth_url = deezer_client.app_authorization()
     return redirect(auth_url)
 
@@ -48,6 +52,8 @@ def deezer_connect():
 @main.route('/soundcloud')
 @login_required
 def soundcloud_connect():
+    if current_user.soundcloud_tkn:
+        return current_user.soundcloud_tkn
     soundcloud_client.check_client_id()
     return os.environ["SOUNDCLOUD_CLIENT_ID"]
 

@@ -12,14 +12,13 @@ from project import db
 class SoundCloudApi:
     def __init__(self):
         self.api_url = "https://api-v2.soundcloud.com"
-        self.client_id = os.environ["SOUNDCLOUD_CLIENT_ID"]
         self.session = requests.Session()
         self.session.mount("http://", adapter=HTTPAdapter(max_retries=3))
         self.session.mount("https://", adapter=HTTPAdapter(max_retries=3))
 
     def check_client_id(self):
         print("CHECK CLIENT ID")
-        if not current_user.soundcloud_tkn or not self.get_user('https://soundcloud.com/eminemofficial'):
+        if not self.get_user('https://soundcloud.com/eminemofficial'):
             print("NEW DRIVER")
             options = webdriver.ChromeOptions()
             options.add_argument(" — disable - gpu")
@@ -34,17 +33,14 @@ class SoundCloudApi:
             for request in driver.requests:
                 m = re.search(pattern, request.url)
                 if m:
-                    os.environ["SOUNDCLOUD_CLIENT_ID"] = m.groups()[0]
                     current_user.soundcloud_tkn = m.groups()[0]
                     db.session.commit()
-                    self.client_id = m.groups()[0]
-                    print(self.client_id)
                     break
             driver.close()
 
     def get_uploaded_tracks(self, user_id, limit=9999):
         url_params = {
-            "client_id": self.client_id,
+            "client_id": current_user.soundcloud_tkn,
             "limit": limit,
             "offset": 0
         }
@@ -54,10 +50,10 @@ class SoundCloudApi:
         tracks = json_payload["collection"]
         return tracks
 
-    def get_liked_tracks(self, user_id, no_of_tracks=10):
+    def get_liked_tracks(self, user_id, nb_tracks=10):
         url_params = {
-            "client_id": self.client_id,
-            "limit": no_of_tracks,
+            "client_id": current_user.soundcloud_tkn,
+            "limit": nb_tracks,
             "offset": 0
         }
         url = "{}/users/{}/likes".format(self.api_url, user_id)
@@ -68,7 +64,7 @@ class SoundCloudApi:
 
     def get_recommended_tracks(self, track, nb_tracks=10):
         url_params = {
-            "client_id": self.client_id,
+            "client_id": current_user.soundcloud_tkn,
             "limit": nb_tracks,
             "offset": 0
         }
@@ -83,7 +79,7 @@ class SoundCloudApi:
             "limit": limit,
             "genre": "soundcloud:genres:" + genre,
             "kind": kind,
-            "client_id": self.client_id
+            "client_id": current_user.soundcloud_tkn
         }
         url = "{}/charts".format(self.api_url)
         response = self.session.get(url, params=url_params)
@@ -93,13 +89,13 @@ class SoundCloudApi:
 
     def get_track_url(self, track):
         if track["downloadable"] and "download_url" in track:
-            return "{}?client_id={}".format(track["download_url"], self.client_id), track.get("original_format", "mp3")
+            return "{}?client_id={}".format(track["download_url"], current_user.soundcloud_tkn), track.get("original_format", "mp3")
         if track["streamable"]:
             if "stream_url" in track:
-                return "{}?client_id={}".format(track["stream_url"], self.client_id), "mp3"
+                return "{}?client_id={}".format(track["stream_url"], current_user.soundcloud_tkn), "mp3"
             for transcoding in track["media"]["transcodings"]:
                 if transcoding["format"]["protocol"] == "progressive":
-                    r = self.session.get(transcoding["url"], params={"client_id": self.client_id})
+                    r = self.session.get(transcoding["url"], params={"client_id": current_user.soundcloud_tkn})
                     return json.loads(r.text)["url"], "mp3"
         return None, None
 
