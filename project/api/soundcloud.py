@@ -14,7 +14,6 @@ class SoundCloudApi:
         self.session.mount("https://", adapter=HTTPAdapter(max_retries=3))
 
     def check_client_id(self):
-        print(self.client_id)
         if self.client_id == "False" or not self.get_user_id('https://soundcloud.com/eminemofficial'):
             options = webdriver.ChromeOptions()
             options.add_argument(" — disable - gpu")
@@ -31,6 +30,7 @@ class SoundCloudApi:
                 if m:
                     os.environ["SOUNDCLOUD_CLIENT_ID"] = m.groups()[0]
                     self.client_id = m.groups()[0]
+                    print(self.client_id)
                     break
             driver.close()
 
@@ -58,16 +58,16 @@ class SoundCloudApi:
         tracks = filter(lambda x: 'playlist' not in x, json_payload["collection"])
         return list(map(lambda x: x['track'], tracks))
 
-    def get_recommended_tracks(self, track, no_of_tracks=10):
+    def get_recommended_tracks(self, track, nb_tracks=10):
         url_params = {
             "client_id": self.client_id,
-            "limit": no_of_tracks,
+            "limit": nb_tracks,
             "offset": 0
         }
         recommended_tracks_url = "{}/tracks/{}/related".format(self.api_url, track.id)
         r = self.session.get(recommended_tracks_url, params=url_params)
         tracks = json.loads(r.text)["collection"]
-        tracks = map(lambda x: x["track"], tracks[:no_of_tracks])
+        tracks = map(lambda x: x["track"], tracks[:nb_tracks])
         return list(tracks)
 
     def get_charted_tracks(self, kind, genre, limit=9999):
@@ -101,13 +101,13 @@ class SoundCloudApi:
             artist = track["publisher_metadata"].get("artist", "")
         elif "user" in track or not artist:
             artist = track["user"]["username"]
-        url, fileFormat = self.get_track_url(track)
+        url, file_format = self.get_track_url(track)
         return {
             "title": str(track.get("title", track["id"])),
             "artist": artist,
             "year": str(track.get("release_year", "")),
             "genre": str(track.get("genre", "")),
-            "format": fileFormat,
+            "format": file_format,
             "download_url": url,
             "artwork_url": track["artwork_url"]
         }
@@ -117,9 +117,7 @@ class SoundCloudApi:
             '{}/resolve'.format(self.api_url),
             params={"client_id": self.client_id, 'url': profile_url}
         )
-        print(r)
         if r.status_code != 200:
             return False
         user = json.loads(r.text)
-        print(user)
         return user.id
