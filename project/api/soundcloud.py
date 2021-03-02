@@ -16,7 +16,10 @@ class SoundCloudApi:
 
     def check_client_id(self):
         if self.client_id == "False" or not self.get_user_id('https://soundcloud.com/eminemofficial'):
-            driver = webdriver.Firefox(executable_path=GeckoDriverManager().install())
+            path = GeckoDriverManager().install()
+            print(path)
+            print(os.environ["GECKODRIVER_PATH"])
+            driver = webdriver.Firefox(executable_path=path)
             driver.get("https://www.soundcloud.com")
             pattern = re.compile('client_id=(.*?)&')
 
