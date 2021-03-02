@@ -14,7 +14,7 @@ class SoundCloudApi:
         self.session.mount("https://", adapter=HTTPAdapter(max_retries=3))
 
     def check_client_id(self):
-        ret = self.get_user_id('https://soundcloud.com/eminemofficial')
+        ret = self.get_user('https://soundcloud.com/eminemofficial')
         print(ret)
         if self.client_id == "False" or not ret:
             options = webdriver.ChromeOptions()
@@ -114,7 +114,7 @@ class SoundCloudApi:
             "artwork_url": track["artwork_url"]
         }
 
-    def get_user_id(self, profile_url):
+    def get_user(self, profile_url):
         r = self.session.get(
             '{}/resolve'.format(self.api_url),
             params={"client_id": self.client_id, 'url': profile_url}
@@ -122,4 +122,4 @@ class SoundCloudApi:
         if r.status_code != 200:
             return False
         user = json.loads(r.text)
-        return user.id
+        return user
