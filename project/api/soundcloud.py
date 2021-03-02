@@ -1,7 +1,6 @@
 import re
 import os
 from seleniumwire import webdriver
-from webdriver_manager.chrome import ChromeDriverManager
 import json, requests
 from requests.adapters import HTTPAdapter
 
@@ -16,7 +15,7 @@ class SoundCloudApi:
 
     def check_client_id(self):
         if self.client_id == "False" or not self.get_user_id('https://soundcloud.com/eminemofficial'):
-            driver = webdriver.Chrome(executable_path=ChromeDriverManager().install())
+            driver = webdriver.Chrome(executable_path=os.environ["CHROME_PATH"])
             driver.get("https://www.soundcloud.com")
             pattern = re.compile('client_id=(.*?)&')
 
