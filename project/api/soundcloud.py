@@ -15,7 +15,12 @@ class SoundCloudApi:
 
     def check_client_id(self):
         if self.client_id == "False" or not self.get_user_id('https://soundcloud.com/eminemofficial'):
-            driver = webdriver.Chrome(executable_path=os.environ["CHROME_PATH"])
+            options = webdriver.ChromeOptions()
+            options.binary_location = os.environ["GOOGLE_CHROME_BIN"]
+            options.add_argument(" — disable - gpu")
+            options.add_argument(" — no - sandbox")
+            options.add_argument(' — headless')
+            driver = webdriver.Chrome(executable_path=os.environ["CHROME_PATH"], chrome_options=options)
             driver.get("https://www.soundcloud.com")
             pattern = re.compile('client_id=(.*?)&')
 
