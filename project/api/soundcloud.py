@@ -19,7 +19,7 @@ class SoundCloudApi:
             path = GeckoDriverManager().install()
             print(path)
             print(os.environ["GECKODRIVER_PATH"])
-            driver = webdriver.Firefox(executable_path=path)
+            driver = webdriver.Firefox(executable_path='geckodriver')
             driver.get("https://www.soundcloud.com")
             pattern = re.compile('client_id=(.*?)&')
 
