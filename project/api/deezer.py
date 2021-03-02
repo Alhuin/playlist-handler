@@ -4,51 +4,54 @@ import requests
 import urllib.parse as urllibparse
 from flask import request
 
-# Client Keys
-CLIENT_ID = os.environ["DEEZER_CLIENT_ID"]
-CLIENT_SECRET = os.environ["DEEZER_CLIENT_SECRET"]
 
-# Deezer URLS
-DEEZER_AUTH_URL = "https://connect.deezer.com/oauth/auth.php"
-DEEZER_TOKEN_URL = "https://connect.deezer.com/oauth/access_token.php"
-DEEZER_API_BASE_URL = "https://api.deezer.com"
+class DeezerApi:
 
-# Server-side Parameters
-CLIENT_SIDE_URL = os.environ["CLIENT_SIDE_URL"]
-PORT = os.environ["CLIENT_SIDE_PORT"]
-REDIRECT_URI = "{}{}/callback/d".format(CLIENT_SIDE_URL, ':{}'.format(PORT) if PORT != "False" else '')
+    def __init__(self):
+        # Client Keys
+        self.client_id = os.environ["DEEZER_CLIENT_ID"]
+        self.client_secret = os.environ["DEEZER_CLIENT_SECRET"]
 
+        # Deezer URLS
+        self.auth_url = "https://connect.deezer.com/oauth/auth.php"
+        self.token_url = "https://connect.deezer.com/oauth/access_token.php"
+        self.api_url = "https://api.deezer.com"
 
-# Authorization of application with deezer
-def app_authorization():
-    auth_query_parameters = {
-        "app_id": CLIENT_ID,
-        "redirect_uri": REDIRECT_URI,
-        "perms": "basic_access,email",
-    }
-    url_args = "&".join(["{}={}".format(key, urllibparse.quote(val)) for key, val in auth_query_parameters.items()])
-    auth_url = "{}/?{}".format(DEEZER_AUTH_URL, url_args)
-    return auth_url
+        # Server-side Parameters
+        self.client_side_url = os.environ["CLIENT_SIDE_URL"]
+        self.port = os.environ["CLIENT_SIDE_PORT"]
+        self.redirect_uri = "{}{}/callback/d".format(
+            self.client_side_url,
+            ':{}'.format(self.port) if self.port != "False" else ''
+        )
 
+    # Authorization of application with deezer
+    def app_authorization(self):
+        auth_query_parameters = {
+            "app_id": self.client_id,
+            "redirect_uri": self.redirect_uri,
+            "perms": "basic_access,email",
+        }
+        url_args = "&".join(["{}={}".format(key, urllibparse.quote(val)) for key, val in auth_query_parameters.items()])
+        auth_url = "{}/?{}".format(self.auth_url, url_args)
+        return auth_url
 
-# User allows us to access to their deezer account
-def user_authorization():
-    auth_token = request.args['code']
-    code_payload = {
-        "app_id": CLIENT_ID,
-        "secret": CLIENT_SECRET,
-        "code": auth_token,
-        "output": json
-    }
-    post_request = requests.post(DEEZER_TOKEN_URL, data=code_payload)
+    # User allows us to access to their deezer account
+    def user_authorization(self):
+        auth_token = request.args['code']
+        code_payload = {
+            "app_id": self.client_id,
+            "secret": self.client_secret,
+            "code": auth_token,
+            "output": json
+        }
+        post_request = requests.post(self.token_url, data=code_payload)
 
-    # Tokens are Returned to Application
-    print(post_request.text)
-    response_data = urllibparse.parse_qs(post_request.text)
-    print(response_data)
-    access_token = response_data["access_token"]
-    token_expires = response_data["expires"]
+        # Token & expiration
+        response_data = urllibparse.parse_qs(post_request.text)
+        access_token = response_data["access_token"]
+        token_expires = response_data["expires"]
 
-    # Use the access token to access Spotify API
-    authorization_header = {"Authorization": "Bearer {}".format(access_token)}
-    return authorization_header
+        # Use the access token to access Spotify API
+        authorization_header = {"Authorization": "Bearer {}".format(access_token)}
+        return authorization_header
