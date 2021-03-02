@@ -14,6 +14,7 @@ class SoundCloudApi:
         self.session.mount("https://", adapter=HTTPAdapter(max_retries=3))
 
     def check_client_id(self):
+        print(self.client_id)
         if self.client_id == "False" or not self.get_user_id('https://soundcloud.com/eminemofficial'):
             options = webdriver.ChromeOptions()
             options.add_argument(" — disable - gpu")
@@ -116,7 +117,9 @@ class SoundCloudApi:
             '{}/resolve'.format(self.api_url),
             params={"client_id": self.client_id, 'url': profile_url}
         )
+        print(r)
         if r.status_code != 200:
             return False
         user = json.loads(r.text)
+        print(user)
         return user.id
