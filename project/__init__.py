@@ -7,9 +7,9 @@ from flask_sqlalchemy import SQLAlchemy
 
 # init SQLAlchemy so we can use it later in our models
 db = SQLAlchemy()
+migrate = Migrate()
 
-
-from project.models import User, SoundcloudToken
+from .models import User, SoundcloudToken
 
 
 def create_app():
@@ -22,7 +22,7 @@ def create_app():
     logging.basicConfig(level=logging.DEBUG)
 
     db.init_app(app)
-    migrate = Migrate(app, db)
+    migrate.init_app(app, db)
 
     login_manager = LoginManager()
     login_manager.login_view = 'auth.login'
