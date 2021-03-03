@@ -1,6 +1,6 @@
 import re
 import os
-
+import chromedriver_binary
 from flask_login import current_user
 from seleniumwire import webdriver
 import json, requests
@@ -25,7 +25,7 @@ class SoundCloudApi:
             options.add_argument("--remote-debugging-port=9222")
 
             pattern = re.compile('client_id=(.*?)&')
-            driver = webdriver.Chrome(executable_path=os.environ["CHROMEDRIVER_PATH"], chrome_options=options)
+            driver = webdriver.Chrome(chrome_options=options)
             driver.get("https://www.soundcloud.com")
 
             for request in driver.requests:
