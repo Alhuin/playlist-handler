@@ -15,6 +15,7 @@ soundcloud_client = soundcloud.SoundCloudApi()
 @main.route('/spotify')
 @login_required
 def spotify_connect():
+    print(current_user.spotify_tkn)
     if current_user.spotify_tkn != 'false':
         return current_user.spotify_tkn
     auth_url = spotify_client.app_authorization()
