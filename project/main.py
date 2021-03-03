@@ -56,7 +56,7 @@ def soundcloud_connect():
     if current_user.soundcloud_tkn != 'false':
         return current_user.soundcloud_tkn
     soundcloud_client.check_client_id()
-    return os.environ["SOUNDCLOUD_CLIENT_ID"]
+    return 'Soundcloud Callback {}'.format(current_user.soundcloud_tkn)
 
 
 @main.route('/callback/d')
