@@ -19,7 +19,7 @@ def spotify_connect():
     logger.info(f'current_user.spotify_token : {current_user.spotify_tkn}')
     if current_user.spotify_tkn != 'false':
         logger.info('returning current token')
-        return current_user.spotify_tkn
+        return current_user.spotify_tkn, 200
     logger.info('generating Spotify token')
     auth_url = spotify_client.app_authorization()
     return redirect(auth_url)
@@ -38,10 +38,10 @@ def spotify_callback():
 @login_required
 def deezer_connect():
     logger.info('recieved Deezer token request')
-    logger.info(f'current_user.spotify_tkn : {current_user.deezer_tkn}')
+    logger.info(f'current_user.deezer_tkn : {current_user.deezer_tkn}')
     if current_user.deezer_tkn != 'false':
         logger.info('returning current token')
-        return current_user.deezer_tkn
+        return current_user.deezer_tkn, 200
     logger.info('generating new Deezer token')
     auth_url = deezer_client.app_authorization()
     return redirect(auth_url)
@@ -53,8 +53,7 @@ def soundcloud_connect():
     logger.info('recieved Soundcloud token request')
     if current_user.soundcloud_tkn == 'false':
         logger.info('generating new Soundcloud token')
-        soundcloud_client.check_client_id()
-
+        soundcloud_client.check_client_id(), 200
     logger.info(f'returning token : {current_user.soundcloud_tkn}')
     return f'Soundcloud token : {current_user.soundcloud_tkn}', 200
 
