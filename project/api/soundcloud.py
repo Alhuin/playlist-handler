@@ -18,8 +18,8 @@ class SoundCloudApi:
         self.session.mount("https://", adapter=HTTPAdapter(max_retries=3))
 
     def check_client_id(self):
-        self.soundcloud_tkn = SoundcloudToken.query.first()
-        if not self.soundcloud_tkn or not self.get_user('https://soundcloud.com/eminemofficial'):
+        soundcloud_tkn = SoundcloudToken.query.first()
+        if not soundcloud_tkn or not self.get_user('https://soundcloud.com/eminemofficial'):
             options = webdriver.ChromeOptions()
             options.add_argument(" — no - sandbox")
             options.add_argument('--disable-dev-shm-usage')
@@ -34,11 +34,12 @@ class SoundCloudApi:
             for request in driver.requests:
                 m = re.search(pattern, request.url)
                 if m:
-                    if not self.soundcloud_tkn:
-                        self.soundcloud_tkn = SoundcloudToken(m.groups()[0])
-                        db.session.add(self.soundcloud_tkn)
+                    if not soundcloud_tkn:
+                        soundcloud_tkn = SoundcloudToken(m.groups()[0])
+                        db.session.add(soundcloud_tkn)
+                        self.soundcloud_tkn = soundcloud_tkn.token
                     else:
-                        self.soundcloud_tkn.token = m.groups()[0]
+                        soundcloud_tkn.token = m.groups()[0]
                     db.session.commit()
                     break
             driver.close()
@@ -57,7 +58,7 @@ class SoundCloudApi:
 
     def get_liked_tracks(self, user_id, nb_tracks=10):
         url_params = {
-            "client_id": self.soundcloud_tkn.token,
+            "client_id": self.soundcloud_tkn,
             "limit": nb_tracks,
             "offset": 0
         }
@@ -69,7 +70,7 @@ class SoundCloudApi:
 
     def get_recommended_tracks(self, track, nb_tracks=10):
         url_params = {
-            "client_id": self.soundcloud_tkn.token,
+            "client_id": self.soundcloud_tkn,
             "limit": nb_tracks,
             "offset": 0
         }
@@ -84,7 +85,7 @@ class SoundCloudApi:
             "limit": limit,
             "genre": "soundcloud:genres:" + genre,
             "kind": kind,
-            "client_id": self.soundcloud_tkn.token
+            "client_id": self.soundcloud_tkn
         }
         url = "{}/charts".format(self.api_url)
         response = self.session.get(url, params=url_params)
@@ -124,7 +125,7 @@ class SoundCloudApi:
     def get_user(self, profile_url):
         r = self.session.get(
             '{}/resolve'.format(self.api_url),
-            params={"client_id": self.soundcloud_tkn.token, 'url': profile_url}
+            params={"client_id": self.soundcloud_tkn, 'url': profile_url}
         )
         if r.status_code != 200:
             return False

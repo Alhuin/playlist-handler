@@ -52,8 +52,8 @@ def deezer_connect():
 def soundcloud_connect():
     logger.info('recieved Soundcloud token request')
     soundcloud_client.check_client_id()
-    logger.info(f'returning token : {soundcloud_client.soundcloud_tkn.token}')
-    return f'Soundcloud token : {soundcloud_client.soundcloud_tkn.token}', 200
+    logger.info(f'returning token : {soundcloud_client.soundcloud_tkn}')
+    return f'Soundcloud token : {soundcloud_client.soundcloud_tkn}', 200
 
 
 @main.route('/callback/d')
