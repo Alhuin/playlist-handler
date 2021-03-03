@@ -21,12 +21,14 @@ class SoundCloudApi:
         self.soundcloud_tkn = SoundcloudToken.query.first()
         if not self.soundcloud_tkn or not self.get_user('https://soundcloud.com/eminemofficial'):
             options = webdriver.ChromeOptions()
-            options.add_argument(" — disable - gpu")
             options.add_argument(" — no - sandbox")
+            options.add_argument('--disable-dev-shm-usage')
+            options.add_argument(" — disable - gpu")
             options.add_argument(' — headless')
+            options.add_argument('--disable-setuid-sandbox')
             options.add_argument("--remote-debugging-port=9222")
             pattern = re.compile('client_id=(.*?)&')
-            driver = webdriver.Chrome(executable_path=os.environ["CHROMEDRIVER_PATH"], chrome_options=options)
+            driver = webdriver.Chrome(chrome_options=options)
             driver.get("https://www.soundcloud.com")
 
             for request in driver.requests:
