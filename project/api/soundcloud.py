@@ -1,12 +1,13 @@
 import re
-import os
-
+import logging
 from flask_login import current_user
 from seleniumwire import webdriver
 import json, requests
 from requests.adapters import HTTPAdapter
 
 from project import db, SoundcloudToken
+
+logger = logging.getLogger(__name__)
 
 
 class SoundCloudApi:
@@ -19,7 +20,9 @@ class SoundCloudApi:
 
     def check_client_id(self):
         soundcloud_tkn = SoundcloudToken.query.first()
+        logger.info(f'soundcloud_tkn : {soundcloud_tkn}')
         if not soundcloud_tkn or not self.get_user('https://soundcloud.com/eminemofficial'):
+            logger.info(f'Scraping new soundcloud client_id')
             options = webdriver.ChromeOptions()
             options.add_argument("--disable-dev-shm-usage")
             pattern = re.compile('client_id=(.*?)&')
@@ -30,10 +33,12 @@ class SoundCloudApi:
                 m = re.search(pattern, request.url)
                 if m:
                     if not soundcloud_tkn:
+                        logger.info('creating new soundcloud token in db')
                         soundcloud_tkn = SoundcloudToken(m.groups()[0])
                         db.session.add(soundcloud_tkn)
                         self.soundcloud_tkn = soundcloud_tkn.token
                     else:
+                        logger.info('editing soundcloud token in db')
                         soundcloud_tkn.token = m.groups()[0]
                     db.session.commit()
                     break
