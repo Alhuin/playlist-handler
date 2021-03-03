@@ -1,4 +1,5 @@
 import os
+import logging
 from flask import Flask
 from flask_login import LoginManager
 from flask_migrate import Migrate
@@ -14,6 +15,11 @@ from project.models import User
 def create_app():
     app = Flask(__name__)
     app.config.from_object(os.environ['APP_SETTINGS'])
+
+    gunicorn_logger = logging.getLogger('gunicorn.error')
+    app.logger.handlers = gunicorn_logger.handlers
+    app.logger.setLevel(gunicorn_logger.level)
+    logging.basicConfig(level=logging.DEBUG)
 
     db.init_app(app)
     migrate = Migrate(app, db)
