@@ -21,6 +21,7 @@ class SoundCloudApi:
         soundcloud_tkn = SoundcloudToken.query.first()
         if not soundcloud_tkn or not self.get_user('https://soundcloud.com/eminemofficial'):
             options = webdriver.ChromeOptions()
+            options.add_argument("--disable-dev-shm-usage")
             pattern = re.compile('client_id=(.*?)&')
             driver = webdriver.Chrome(chrome_options=options)
             driver.get("https://www.soundcloud.com")
@@ -36,7 +37,7 @@ class SoundCloudApi:
                         soundcloud_tkn.token = m.groups()[0]
                     db.session.commit()
                     break
-            driver.close()
+            driver.quit()
 
     def get_uploaded_tracks(self, user_id, limit=9999):
         url_params = {
