@@ -37,7 +37,7 @@ def spotify_callback():
     print("ARTIST DATA")
     print(artist_data)
 
-    return "callback"
+    return authorization_header, 200
 
 
 @main.route('/deezer')
@@ -56,13 +56,13 @@ def soundcloud_connect():
     if current_user.soundcloud_tkn != 'false':
         return current_user.soundcloud_tkn
     soundcloud_client.check_client_id()
-    return 'Soundcloud Callback {}'.format(current_user.soundcloud_tkn)
+    return 'Soundcloud Callback {}'.format(current_user.soundcloud_tkn), 200
 
 
 @main.route('/callback/d')
 def deezer_callback():
     authorization_header = deezer_client.user_authorization()
-    return authorization_header
+    return authorization_header, 200
 
 
 @main.route('/')
