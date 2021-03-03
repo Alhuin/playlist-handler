@@ -1,5 +1,5 @@
-from flask import Blueprint, render_template, url_for, redirect, request, flash
-from flask_login import login_user, logout_user, login_required
+from flask import Blueprint, render_template, url_for, redirect, request, flash, current_app
+from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from . import db, User
 
@@ -17,6 +17,7 @@ def login_post():
         flash('Please check your login details and try again.')
         return redirect(url_for('auth.login'))
     login_user(user, remember=remember)
+    current_app.logger.info(f'user {user.name} logged in')
     return redirect(url_for('main.home'))
 
 
@@ -45,6 +46,7 @@ def signup_post():
     db.session.add(new_user)
     db.session.commit()
 
+    current_app.logger.info(f'user {new_user.name} signed up')
     return redirect(url_for('auth.login'))
 
 
@@ -57,4 +59,5 @@ def signup():
 @login_required
 def logout():
     logout_user()
+    current_app.logger.info(f'user {current_user.name} signed up')
     return redirect(url_for('main.index'))
