@@ -53,7 +53,7 @@ def soundcloud_connect():
     logger.info('recieved Soundcloud token request')
     if current_user.soundcloud_tkn == 'false':
         logger.info('generating new Soundcloud token')
-        soundcloud_client.check_client_id(), 200
+        soundcloud_client.check_client_id()
     logger.info(f'returning token : {current_user.soundcloud_tkn}')
     return f'Soundcloud token : {current_user.soundcloud_tkn}', 200
 
