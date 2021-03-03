@@ -6,7 +6,7 @@ from seleniumwire import webdriver
 import json, requests
 from requests.adapters import HTTPAdapter
 
-from project import db
+from project import db, SoundcloudToken
 
 
 class SoundCloudApi:
@@ -16,7 +16,7 @@ class SoundCloudApi:
         self.session.mount("http://", adapter=HTTPAdapter(max_retries=3))
         self.session.mount("https://", adapter=HTTPAdapter(max_retries=3))
 
-    def check_client_id(self):
+    def check_client_id(self, soundcloud_tkn):
         if not self.get_user('https://soundcloud.com/eminemofficial'):
             options = webdriver.ChromeOptions()
             options.add_argument(" — disable - gpu")
@@ -30,7 +30,7 @@ class SoundCloudApi:
             for request in driver.requests:
                 m = re.search(pattern, request.url)
                 if m:
-                    current_user.soundcloud_tkn = m.groups()[0]
+                    soundcloud_tkn.token = m.groups()[0]
                     db.session.commit()
                     break
             driver.close()

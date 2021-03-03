@@ -2,7 +2,7 @@ import logging
 from flask import Blueprint, render_template, redirect
 from flask_login import login_required, current_user
 from .api import spotify, deezer, soundcloud
-from . import db
+from . import db, SoundcloudToken
 
 main = Blueprint('main', __name__)
 logger = logging.getLogger(__name__)
@@ -17,7 +17,7 @@ soundcloud_client = soundcloud.SoundCloudApi()
 def spotify_connect():
     logger.info('recieved Spotify token request')
     logger.info(f'current_user.spotify_token : {current_user.spotify_tkn}')
-    if current_user.spotify_tkn != 'false':
+    if not current_user.spotify_tkn:
         logger.info('returning current token')
         return current_user.spotify_tkn, 200
     logger.info('generating Spotify token')
@@ -39,7 +39,7 @@ def spotify_callback():
 def deezer_connect():
     logger.info('recieved Deezer token request')
     logger.info(f'current_user.deezer_tkn : {current_user.deezer_tkn}')
-    if current_user.deezer_tkn != 'false':
+    if not current_user.deezer_tkn:
         logger.info('returning current token')
         return current_user.deezer_tkn, 200
     logger.info('generating new Deezer token')
@@ -51,11 +51,13 @@ def deezer_connect():
 @login_required
 def soundcloud_connect():
     logger.info('recieved Soundcloud token request')
-    if current_user.soundcloud_tkn == 'false':
+    soundcloud_tkn = SoundcloudToken.query.search().first()
+
+    if not soundcloud_tkn:
         logger.info('generating new Soundcloud token')
-        soundcloud_client.check_client_id()
-    logger.info(f'returning token : {current_user.soundcloud_tkn}')
-    return f'Soundcloud token : {current_user.soundcloud_tkn}', 200
+        soundcloud_client.check_client_id(soundcloud_tkn)
+    logger.info(f'returning token : {soundcloud_tkn.token}')
+    return f'Soundcloud token : {soundcloud_tkn.token}', 200
 
 
 @main.route('/callback/d')
