@@ -30,6 +30,8 @@ class SoundCloudApi:
         return r.status_code == 200
 
     def get_token(self):
+        soundcloud_tkn = SoundcloudToken.query.first()
+        logger.info(f'DB SouncloudId : {soundcloud_tkn}')
         logger.info(f'Scraping new soundcloud client_id')
         options = webdriver.ChromeOptions()
         pattern = re.compile('client_id=(.*?)&')
@@ -37,20 +39,19 @@ class SoundCloudApi:
         driver.get("https://www.soundcloud.com")
 
         for request in driver.requests:
-            logger.info(f'request {request.params}')
-            pprint(request.params)
-            # if m:
-            #     if not self.soundcloud_tkn:
-            #         logger.info(f'creating new soundcloud token in db: {m.groups()[0]}')
-            #         soundcloud_tkn = SoundcloudToken(m.groups()[0])
-            #         db.session.add(soundcloud_tkn)
-            #         self.soundcloud_tkn = soundcloud_tkn
-            #     else:
-            #         logger.info(f'editing soundcloud token in db: {m.groups()[0]}')
-            #         self.soundcloud_tkn.token = m.groups()[0]
-            #     db.session.commit()
-            #     break
-        # driver.quit()
+            m = re.search(pattern, request.url)
+            if m:
+                if not soundcloud_tkn:
+                    logger.info(f'creating new soundcloud token in db: {m.groups()[0]}')
+                    soundcloud_tkn = SoundcloudToken(m.groups()[0])
+                    db.session.add(soundcloud_tkn)
+                    self.soundcloud_tkn = soundcloud_tkn
+                else:
+                    logger.info(f'editing soundcloud token in db: {m.groups()[0]}')
+                    self.soundcloud_tkn.token = m.groups()[0]
+                db.session.commit()
+                break
+        driver.quit()
 
     def get_uploaded_tracks(self, user_id, limit=9999):
         url_params = {
