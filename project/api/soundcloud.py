@@ -27,6 +27,7 @@ class SoundCloudApi:
             f'{self.api_url}/resolve',
             params={"client_id": soundcloud_tkn, 'url': 'https://soundcloud.com/eminemofficial'}
         )
+        logger.info(f'request return status code {r.status_code}')
         return r.status_code == 200
 
     def get_token(self):
