@@ -54,8 +54,8 @@ def soundcloud_connect():
     if not soundcloud_client.token_is_valid():
         logger.info('missing or invalid token, generating one')
         soundcloud_client.get_token()
-    logger.info(f'returning token : {soundcloud_client.soundcloud_tkn}')
-    return soundcloud_client.soundcloud_tkn if soundcloud_client.soundcloud_tkn else "Error getting token", 200
+    logger.info(f'returning token : {soundcloud_client.soundcloud_tkn.token}')
+    return soundcloud_client.soundcloud_tkn.token if soundcloud_client.soundcloud_tkn else "Error getting token", 200
 
 
 @main.route('/callback/d')
