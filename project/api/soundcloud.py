@@ -22,7 +22,8 @@ class SoundCloudApi:
 
     def token_is_valid(self):
         soundcloud_tkn = SoundcloudToken.query.first()
-        logger.info(f'Checking if db token is valid: {soundcloud_tkn}')
+        if not soundcloud_tkn:
+            return False
         r = self.session.get(
             f'{self.api_url}/featured_tracks/top/all-music',
             params={"client_id": soundcloud_tkn.token}
