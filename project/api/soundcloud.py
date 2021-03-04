@@ -39,8 +39,12 @@ class SoundCloudApi:
         driver = webdriver.Chrome(chrome_options=options)
         driver.get("https://www.soundcloud.com")
 
+        driver.wait_for_request('https://api-v2.soundcloud.com/')
+        print('recieved request')
         for request in driver.requests:
+            logger.info(f'match ? {request.url}')
             m = re.search(pattern, request.url)
+            logger.info(f'{m}')
             if m:
                 logger.info(f'match ! {m.groups()[0]}')
                 if not soundcloud_tkn:
