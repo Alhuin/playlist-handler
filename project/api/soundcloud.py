@@ -16,19 +16,22 @@ class SoundCloudApi:
     def __init__(self):
         self.api_url = "https://api-v2.soundcloud.com"
         self.session = requests.Session()
-        self.soundcloud_tkn = False
+        self.soundcloud_tkn = SoundcloudToken()
         self.session.mount("http://", adapter=HTTPAdapter(max_retries=3))
         self.session.mount("https://", adapter=HTTPAdapter(max_retries=3))
 
     def token_is_valid(self):
         soundcloud_tkn = SoundcloudToken.query.first()
         logger.info(f'Checking if db token is valid: {soundcloud_tkn}')
-        r = requests.Session().get(
-            f'{self.api_url}/resolve',
-            params={"client_id": soundcloud_tkn, 'url': 'https://soundcloud.com/eminemofficial'}
+        r = self.session.get(
+            f'{self.api_url}/featured_tracks/top/all-music',
+            params={"client_id": soundcloud_tkn.token}
         )
         logger.info(f'request return status code {r.status_code}')
-        return r.status_code == 200
+        if r.status_code == 200:
+            self.soundcloud_tkn = soundcloud_tkn
+            return True
+        return False
 
     def get_token(self):
         soundcloud_tkn = SoundcloudToken.query.first()
@@ -40,14 +43,9 @@ class SoundCloudApi:
         driver.get("https://www.soundcloud.com")
 
         driver.wait_for_request('https://api-v2.soundcloud.com/')
-        print('recieved request')
-        print([r for r in driver.requests])
         for request in driver.requests:
-            logger.info(f'match ? {request.url}')
             m = re.search(pattern, request.url)
-            logger.info(f'{m}')
             if m:
-                logger.info(f'match ! {m.groups()[0]}')
                 if not soundcloud_tkn:
                     logger.info(f'creating new soundcloud token in db: {m.groups()[0]}')
                     soundcloud_tkn = SoundcloudToken(m.groups()[0])

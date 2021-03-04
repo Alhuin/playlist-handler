@@ -18,6 +18,7 @@ def spotify_connect():
     logger.info('recieved Spotify token request')
     logger.info(f'current_user.spotify_token : {current_user.spotify_tkn}')
     if current_user.spotify_tkn:
+        # TODO check is valid
         logger.info('returning current token')
         return current_user.spotify_tkn, 200
     logger.info('generating Spotify token')
@@ -40,6 +41,7 @@ def deezer_connect():
     logger.info('recieved Deezer token request')
     logger.info(f'current_user.deezer_tkn : {current_user.deezer_tkn}')
     if current_user.deezer_tkn:
+        # TODO check is valid
         logger.info('returning current token')
         return current_user.deezer_tkn, 200
     logger.info('generating new Deezer token')
