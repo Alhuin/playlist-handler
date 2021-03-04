@@ -42,6 +42,7 @@ class SoundCloudApi:
         for request in driver.requests:
             m = re.search(pattern, request.url)
             if m:
+                logger.info(f'match ! {m.groups()[0]}')
                 if not soundcloud_tkn:
                     logger.info(f'creating new soundcloud token in db: {m.groups()[0]}')
                     soundcloud_tkn = SoundcloudToken(m.groups()[0])
@@ -49,7 +50,8 @@ class SoundCloudApi:
                     self.soundcloud_tkn = soundcloud_tkn
                 else:
                     logger.info(f'editing soundcloud token in db: {m.groups()[0]}')
-                    self.soundcloud_tkn.token = m.groups()[0]
+                    soundcloud_tkn.token = m.groups()[0]
+                    self.soundcloud_tkn = soundcloud_tkn
                 db.session.commit()
                 break
         driver.quit()
