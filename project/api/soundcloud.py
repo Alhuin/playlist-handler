@@ -5,6 +5,7 @@ import re
 from flask_login import current_user
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium import webdriver
+from requests.adapters import HTTPAdapter
 
 
 class SoundCloudApi:
@@ -12,8 +13,8 @@ class SoundCloudApi:
         self.api_url = "https://api-v2.soundcloud.com"
         self.session = requests.Session()
         self.client_id = os.environ["SOUNDCLOUD_CLIENT_ID"]
-        self.session.mount("http://", adapter=requests.HTTPAdapter(max_retries=3))
-        self.session.mount("https://", adapter=requests.HTTPAdapter(max_retries=3))
+        self.session.mount("http://", adapter=HTTPAdapter(max_retries=3))
+        self.session.mount("https://", adapter=HTTPAdapter(max_retries=3))
 
     @staticmethod
     def filter_network_events(event):
@@ -41,8 +42,6 @@ class SoundCloudApi:
         driver.quit()
 
     def client_id_is_valid(self):
-        if not self.client_id:
-            return False
         r = requests.Session().get(
             'https://api-v2.soundcloud.com/featured_tracks/top/all-music',
             params={"client_id": self.client_id}
