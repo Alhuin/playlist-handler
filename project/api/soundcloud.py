@@ -21,43 +21,35 @@ class SoundCloudApi:
         self.session.mount("https://", adapter=HTTPAdapter(max_retries=3))
 
     def token_is_valid(self):
-        soundcloud_tkn = SoundcloudToken.query.first()
-        if not soundcloud_tkn:
-            return False
         r = self.session.get(
             f'{self.api_url}/featured_tracks/top/all-music',
-            params={"client_id": soundcloud_tkn.token}
+            params={"client_id": self.soundcloud_tkn.token}
         )
-        logger.info(f'request return status code {r.status_code}')
-        if r.status_code == 200:
-            self.soundcloud_tkn = soundcloud_tkn
-            return True
-        return False
+        return r.status_code == 200
 
     def get_token(self):
-        soundcloud_tkn = SoundcloudToken.query.first()
-        logger.info(f'DB SouncloudId : {soundcloud_tkn}')
         logger.info(f'Scraping new soundcloud client_id')
+        soundcloud_tkn = SoundcloudToken.query.first()
         options = webdriver.ChromeOptions()
         pattern = re.compile('client_id=(.*?)&')
         driver = webdriver.Chrome(chrome_options=options)
-        driver.get("https://www.soundcloud.com")
 
+        driver.get("https://www.soundcloud.com")
         driver.wait_for_request('https://api-v2.soundcloud.com/')
+
         for request in driver.requests:
-            m = re.search(pattern, request.url)
-            if m:
+            match = re.search(pattern, request.url)
+            if match:
                 if not soundcloud_tkn:
-                    logger.info(f'creating new soundcloud token in db: {m.groups()[0]}')
-                    soundcloud_tkn = SoundcloudToken(m.groups()[0])
-                    db.session.add(soundcloud_tkn)
-                    self.soundcloud_tkn = soundcloud_tkn
+                    logger.info(f'creating new soundcloud token in db: {match.groups()[0]}')
+                    self.soundcloud_tkn = SoundcloudToken(match.groups()[0])
+                    db.session.add(self.soundcloud_tkn)
                 else:
-                    logger.info(f'editing soundcloud token in db: {m.groups()[0]}')
-                    soundcloud_tkn.token = m.groups()[0]
-                    self.soundcloud_tkn = soundcloud_tkn
+                    logger.info(f'editing soundcloud token in db: {match.groups()[0]}')
+                    self.soundcloud_tkn.token = match.groups()[0]
                 db.session.commit()
                 break
+
         driver.quit()
 
     def get_uploaded_tracks(self, user_id, limit=9999):

@@ -49,6 +49,14 @@ def deezer_connect():
     return redirect(auth_url)
 
 
+@main.route('/callback/d')
+def deezer_callback():
+    logger.info('recieved Deezer oAuth callback')
+    authorization_header = deezer_client.user_authorization()
+    logger.info(f'Deezer authorization_header : {authorization_header}')
+    return authorization_header, 200
+
+
 @main.route('/soundcloud')
 @login_required
 def soundcloud_connect():
@@ -58,14 +66,6 @@ def soundcloud_connect():
         soundcloud_client.get_token()
     logger.info(f'returning token : {soundcloud_client.soundcloud_tkn.token}')
     return soundcloud_client.soundcloud_tkn.token if soundcloud_client.soundcloud_tkn else "Error getting token", 200
-
-
-@main.route('/callback/d')
-def deezer_callback():
-    logger.info('recieved Deezer oAuth callback')
-    authorization_header = deezer_client.user_authorization()
-    logger.info(f'Deezer authorization_header : {authorization_header}')
-    return authorization_header, 200
 
 
 @main.route('/')
