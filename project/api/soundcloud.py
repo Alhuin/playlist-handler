@@ -1,12 +1,10 @@
+import json
+import requests
 import os
 import re
-import logging
 from flask_login import current_user
-from seleniumwire import webdriver
-import json, requests
-from requests.adapters import HTTPAdapter
-
-logger = logging.getLogger(__name__)
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+from selenium import webdriver
 
 
 class SoundCloudApi:
@@ -14,18 +12,28 @@ class SoundCloudApi:
         self.api_url = "https://api-v2.soundcloud.com"
         self.session = requests.Session()
         self.client_id = os.environ["SOUNDCLOUD_CLIENT_ID"]
-        self.session.mount("http://", adapter=HTTPAdapter(max_retries=3))
-        self.session.mount("https://", adapter=HTTPAdapter(max_retries=3))
+        self.session.mount("http://", adapter=requests.HTTPAdapter(max_retries=3))
+        self.session.mount("https://", adapter=requests.HTTPAdapter(max_retries=3))
+
+    @staticmethod
+    def filter_network_events(event):
+        return json.loads(event["message"])["message"]['method'] \
+               in ("Network.response", "Network.request", "Network.webSocket")
 
     def update_client_id(self):
         pattern = re.compile('client_id=(.*?)&')
-        driver = webdriver.Chrome()
-
+        cap = DesiredCapabilities.CHROME
+        cap['goog:loggingPrefs'] = {'performance': 'ALL'}
+        driver = webdriver.Chrome(desired_capabilities=cap)
         driver.get("https://www.soundcloud.com")
-        driver.wait_for_request('https://api-v2.soundcloud.com/')
 
-        for request in driver.requests:
-            match = re.search(pattern, request.url)
+        traffic = [
+            json.loads(r["message"])["message"]["params"]["request"]["url"] for r in driver.get_log('performance')
+            if json.loads(r["message"])["message"]["method"] == 'Network.requestWillBeSent'
+        ]
+
+        for request in traffic:
+            match = re.search(pattern, request)
             if match:
                 os.environ["SOUNDCLOUD_CLIENT_ID"] = self.client_id = match.groups()[0]
                 break
@@ -92,7 +100,8 @@ class SoundCloudApi:
 
     def get_track_url(self, track):
         if track["downloadable"] and "download_url" in track:
-            return "{}?client_id={}".format(track["download_url"], current_user.soundcloud_tkn), track.get("original_format", "mp3")
+            return "{}?client_id={}".format(track["download_url"], current_user.soundcloud_tkn), track.get(
+                "original_format", "mp3")
         if track["streamable"]:
             if "stream_url" in track:
                 return "{}?client_id={}".format(track["stream_url"], current_user.soundcloud_tkn), "mp3"
