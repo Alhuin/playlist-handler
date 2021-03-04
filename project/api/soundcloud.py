@@ -2,10 +2,13 @@ import json
 import requests
 import os
 import re
+import logging
 from flask_login import current_user
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium import webdriver
 from requests.adapters import HTTPAdapter
+
+logger = logging.getLogger(__name__)
 
 
 class SoundCloudApi:
@@ -42,6 +45,7 @@ class SoundCloudApi:
         driver.quit()
 
     def client_id_is_valid(self):
+        logger.info(f'checking token: {self.client_id}')
         r = requests.Session().get(
             'https://api-v2.soundcloud.com/featured_tracks/top/all-music',
             params={"client_id": self.client_id}
