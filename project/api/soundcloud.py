@@ -1,5 +1,7 @@
 import re
 import logging
+from pprint import pprint
+
 from flask_login import current_user
 from seleniumwire import webdriver
 import json, requests
@@ -18,31 +20,37 @@ class SoundCloudApi:
         self.session.mount("http://", adapter=HTTPAdapter(max_retries=3))
         self.session.mount("https://", adapter=HTTPAdapter(max_retries=3))
 
-    def check_client_id(self):
+    def token_is_valid(self):
         soundcloud_tkn = SoundcloudToken.query.first()
-        logger.info(f'soundcloud_tkn : {soundcloud_tkn}')
-        if not soundcloud_tkn or not self.get_user('https://soundcloud.com/eminemofficial'):
-            logger.info(f'Scraping new soundcloud client_id')
-            options = webdriver.ChromeOptions()
-            options.add_argument("--disable-dev-shm-usage")
-            pattern = re.compile('client_id=(.*?)&')
-            driver = webdriver.Chrome(chrome_options=options)
-            driver.get("https://www.soundcloud.com")
+        logger.info(f'Checking if db token is valid: {soundcloud_tkn}')
+        r = requests.Session().get(
+            f'{self.api_url}/resolve',
+            params={"client_id": soundcloud_tkn, 'url': 'https://soundcloud.com/eminemofficial'}
+        )
+        return r.status_code == 200
 
-            for request in driver.requests:
-                m = re.search(pattern, request.url)
-                if m:
-                    if not soundcloud_tkn:
-                        logger.info('creating new soundcloud token in db')
-                        soundcloud_tkn = SoundcloudToken(m.groups()[0])
-                        db.session.add(soundcloud_tkn)
-                        self.soundcloud_tkn = soundcloud_tkn.token
-                    else:
-                        logger.info('editing soundcloud token in db')
-                        soundcloud_tkn.token = m.groups()[0]
-                    db.session.commit()
-                    break
-            driver.quit()
+    def get_token(self):
+        logger.info(f'Scraping new soundcloud client_id')
+        options = webdriver.ChromeOptions()
+        pattern = re.compile('client_id=(.*?)&')
+        driver = webdriver.Chrome(chrome_options=options)
+        driver.get("https://www.soundcloud.com")
+
+        for request in driver.requests:
+            logger.info(f'request {request.params}')
+            pprint(request.params)
+            # if m:
+            #     if not self.soundcloud_tkn:
+            #         logger.info(f'creating new soundcloud token in db: {m.groups()[0]}')
+            #         soundcloud_tkn = SoundcloudToken(m.groups()[0])
+            #         db.session.add(soundcloud_tkn)
+            #         self.soundcloud_tkn = soundcloud_tkn
+            #     else:
+            #         logger.info(f'editing soundcloud token in db: {m.groups()[0]}')
+            #         self.soundcloud_tkn.token = m.groups()[0]
+            #     db.session.commit()
+            #     break
+        # driver.quit()
 
     def get_uploaded_tracks(self, user_id, limit=9999):
         url_params = {
@@ -58,7 +66,7 @@ class SoundCloudApi:
 
     def get_liked_tracks(self, user_id, nb_tracks=10):
         url_params = {
-            "client_id": self.soundcloud_tkn,
+            "client_id": self.soundcloud_tkn.token,
             "limit": nb_tracks,
             "offset": 0
         }

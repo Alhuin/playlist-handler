@@ -19,7 +19,7 @@ def create_app():
     gunicorn_logger = logging.getLogger('gunicorn.error')
     app.logger.handlers = gunicorn_logger.handlers
     app.logger.setLevel(gunicorn_logger.level)
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.INFO)
 
     db.init_app(app)
     migrate.init_app(app, db)
@@ -27,6 +27,8 @@ def create_app():
     login_manager = LoginManager()
     login_manager.login_view = 'auth.login'
     login_manager.init_app(app)
+
+    from .models import User, SoundcloudToken
 
     @login_manager.user_loader
     def load_user(user_id):

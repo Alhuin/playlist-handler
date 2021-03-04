@@ -12,7 +12,7 @@ class SoundcloudToken(db.Model):
         self.token = token
 
     def __repr__(self):
-        return '<id {}>'.format(self.id)
+        return f'<id {self.id}: {self.token}>'
 
 
 class User(UserMixin, db.Model):
@@ -31,4 +31,4 @@ class User(UserMixin, db.Model):
         self.name = name
 
     def __repr__(self):
-        return '<id {}>'.format(self.id)
+        return f'<id {self.id}: {self.name} @ {self.email}>'

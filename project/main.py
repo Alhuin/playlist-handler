@@ -51,9 +51,11 @@ def deezer_connect():
 @login_required
 def soundcloud_connect():
     logger.info('recieved Soundcloud token request')
-    soundcloud_client.check_client_id()
+    if not soundcloud_client.token_is_valid():
+        logger.info('missing or invalid token, generating one')
+        soundcloud_client.get_token()
     logger.info(f'returning token : {soundcloud_client.soundcloud_tkn}')
-    return f'Soundcloud token : {soundcloud_client.soundcloud_tkn}', 200
+    return soundcloud_client.soundcloud_tkn if soundcloud_client.soundcloud_tkn else "Error getting token", 200
 
 
 @main.route('/callback/d')
