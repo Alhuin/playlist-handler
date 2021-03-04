@@ -1,13 +1,10 @@
+import os
 import re
 import logging
-from pprint import pprint
-
 from flask_login import current_user
 from seleniumwire import webdriver
 import json, requests
 from requests.adapters import HTTPAdapter
-
-from project import db, SoundcloudToken
 
 logger = logging.getLogger(__name__)
 
@@ -16,23 +13,13 @@ class SoundCloudApi:
     def __init__(self):
         self.api_url = "https://api-v2.soundcloud.com"
         self.session = requests.Session()
-        self.soundcloud_tkn = SoundcloudToken()
+        self.client_id = os.environ["SOUNDCLOUD_CLIENT_ID"]
         self.session.mount("http://", adapter=HTTPAdapter(max_retries=3))
         self.session.mount("https://", adapter=HTTPAdapter(max_retries=3))
 
-    def token_is_valid(self):
-        r = self.session.get(
-            f'{self.api_url}/featured_tracks/top/all-music',
-            params={"client_id": self.soundcloud_tkn.token}
-        )
-        return r.status_code == 200
-
-    def get_token(self):
-        logger.info(f'Scraping new soundcloud client_id')
-        soundcloud_tkn = SoundcloudToken.query.first()
-        options = webdriver.ChromeOptions()
+    def update_client_id(self):
         pattern = re.compile('client_id=(.*?)&')
-        driver = webdriver.Chrome(chrome_options=options)
+        driver = webdriver.Chrome()
 
         driver.get("https://www.soundcloud.com")
         driver.wait_for_request('https://api-v2.soundcloud.com/')
@@ -40,21 +27,23 @@ class SoundCloudApi:
         for request in driver.requests:
             match = re.search(pattern, request.url)
             if match:
-                if not soundcloud_tkn:
-                    logger.info(f'creating new soundcloud token in db: {match.groups()[0]}')
-                    self.soundcloud_tkn = SoundcloudToken(match.groups()[0])
-                    db.session.add(self.soundcloud_tkn)
-                else:
-                    logger.info(f'editing soundcloud token in db: {match.groups()[0]}')
-                    self.soundcloud_tkn.token = match.groups()[0]
-                db.session.commit()
+                os.environ["SOUNDCLOUD_CLIENT_ID"] = self.client_id = match.groups()[0]
                 break
 
         driver.quit()
 
+    def client_id_is_valid(self):
+        if not self.client_id:
+            return False
+        r = requests.Session().get(
+            'https://api-v2.soundcloud.com/featured_tracks/top/all-music',
+            params={"client_id": self.client_id}
+        )
+        return r.status_code == 200
+
     def get_uploaded_tracks(self, user_id, limit=9999):
         url_params = {
-            "client_id": self.soundcloud_tkn.token,
+            "client_id": current_user.soundcloud_tkn,
             "limit": limit,
             "offset": 0
         }
@@ -66,7 +55,7 @@ class SoundCloudApi:
 
     def get_liked_tracks(self, user_id, nb_tracks=10):
         url_params = {
-            "client_id": self.soundcloud_tkn.token,
+            "client_id": current_user.soundcloud_tkn,
             "limit": nb_tracks,
             "offset": 0
         }
@@ -78,7 +67,7 @@ class SoundCloudApi:
 
     def get_recommended_tracks(self, track, nb_tracks=10):
         url_params = {
-            "client_id": self.soundcloud_tkn,
+            "client_id": current_user.soundcloud_tkn,
             "limit": nb_tracks,
             "offset": 0
         }
@@ -93,7 +82,7 @@ class SoundCloudApi:
             "limit": limit,
             "genre": "soundcloud:genres:" + genre,
             "kind": kind,
-            "client_id": self.soundcloud_tkn
+            "client_id": current_user.soundcloud_tkn
         }
         url = "{}/charts".format(self.api_url)
         response = self.session.get(url, params=url_params)
@@ -133,7 +122,7 @@ class SoundCloudApi:
     def get_user(self, profile_url):
         r = self.session.get(
             '{}/resolve'.format(self.api_url),
-            params={"client_id": self.soundcloud_tkn, 'url': profile_url}
+            params={"client_id": current_user.soundcloud_tkn, 'url': profile_url}
         )
         if r.status_code != 200:
             return False

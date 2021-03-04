@@ -2,19 +2,6 @@ from flask_login import UserMixin
 from . import db
 
 
-class SoundcloudToken(db.Model):
-    __tablename__ = 'soundcloud_tkn'
-
-    id = db.Column(db.Integer, primary_key=True)
-    token = db.Column(db.String(1000), default='')
-
-    def __init__(self, token=''):
-        self.token = token
-
-    def __repr__(self):
-        return f'<id {self.id}: {self.token}>'
-
-
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
 

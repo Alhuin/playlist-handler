@@ -38,40 +38,30 @@ def spotify_callback():
 @main.route('/deezer')
 @login_required
 def deezer_connect():
-    logger.info('recieved Deezer token request')
-    logger.info(f'current_user.deezer_tkn : {current_user.deezer_tkn}')
     if current_user.deezer_tkn:
         # TODO check is valid
-        logger.info('returning current token')
         return current_user.deezer_tkn, 200
-    logger.info('generating new Deezer token')
     auth_url = deezer_client.app_authorization()
     return redirect(auth_url)
 
 
 @main.route('/callback/d')
 def deezer_callback():
-    logger.info('recieved Deezer oAuth callback')
     authorization_header = deezer_client.user_authorization()
-    logger.info(f'Deezer authorization_header : {authorization_header}')
     return authorization_header, 200
 
 
 @main.route('/soundcloud')
 @login_required
 def soundcloud_connect():
-    logger.info('recieved Soundcloud token request')
-    if not soundcloud_client.token_is_valid():
-        logger.info('missing or invalid token, generating one')
-        soundcloud_client.get_token()
-    logger.info(f'returning token : {soundcloud_client.soundcloud_tkn.token}')
-    return soundcloud_client.soundcloud_tkn.token if soundcloud_client.soundcloud_tkn else "Error getting token", 200
+    if not soundcloud_client.client_id_is_valid():
+        soundcloud_client.update_client_id()
+    return soundcloud_client.client_id
 
 
 @main.route('/')
 def index():
     if current_user.is_authenticated:
-        logger.info('current_user is authenticated, redirecting to profile')
         return render_template('profile.html', name=current_user.name)
     return render_template('index.html')
 

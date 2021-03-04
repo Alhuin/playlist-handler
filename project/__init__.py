@@ -9,7 +9,7 @@ from flask_sqlalchemy import SQLAlchemy
 db = SQLAlchemy()
 migrate = Migrate()
 
-from .models import User, SoundcloudToken
+from .models import User
 
 
 def create_app():
@@ -28,7 +28,7 @@ def create_app():
     login_manager.login_view = 'auth.login'
     login_manager.init_app(app)
 
-    from .models import User, SoundcloudToken
+    from .models import User
 
     @login_manager.user_loader
     def load_user(user_id):
